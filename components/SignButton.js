@@ -1,9 +1,10 @@
 import AsyncStorage from '@react-native-async-storage/async-storage';
 import React from 'react';
-import { TextInput,Button, StyleSheet, Text, View,Pressable } from 'react-native';
+import { Alert,TextInput,Button, StyleSheet, Text, View,Pressable } from 'react-native';
 
 import styles from './Styles'
 
+import * as utils from './utils/data';
 
 
 
@@ -15,7 +16,7 @@ class SignButton extends React.Component {
     super(props);
     this.state = {
         type: "in",
-        title: "IN"
+        title: "IN",
     }
   }
 
@@ -40,10 +41,25 @@ class SignButton extends React.Component {
   ]
 
 
+  onPress = async() => {
+    let date = new Date();
+    Alert.alert(
+      "Alert Title",
+      "YOOO",);
+    if(this.state.type == 'in'){
+       await utils.setRegistry();
+       console.log(await AsyncStorage.getAllKeys())
+    }
+    else{
+      
+       console.log(await utils.loadRegistry());
+    }  
+  }
   render(){
       return(
         <Pressable
-            style={this.setStyle}>
+            style={this.setStyle}
+            onPress={this.onPress}>
             <Text style={styles.SignText}>{this.state.title}</Text>
         </Pressable>
       )
