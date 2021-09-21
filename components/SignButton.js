@@ -15,19 +15,17 @@ class SignButton extends React.Component {
   constructor(props){
     super(props);
     this.state = {
-        type: "in",
-        title: "IN",
+        type: undefined,
+        title: undefined,
     }
   }
 
 
   componentDidMount(){
-    if(this.props.type == "out"){
-        this.setState({
-            type: "out",
-            title: "OUT"
-        })
-    }
+    this.setState({
+      type: this.props.type,
+      title: this.props.type.toUpperCase()
+  })
   }
 
 
@@ -46,14 +44,24 @@ class SignButton extends React.Component {
     Alert.alert(
       "Alert Title",
       "YOOO",);
-    if(this.state.type == 'in'){
-       await utils.setRegistry();
-       console.log(await AsyncStorage.getAllKeys())
+    if(! utils.signRegistry(this.state.type,false)){
+      Alert.prompt(
+        "You already signed it",
+        "Do you want to overwrite it?",
+        [
+          {
+            text: "Cancel",
+            onPress: () => console.log("Cancel Pressed"),
+            style: "cancel"
+          },
+          {
+            text: "OK",
+            onPress: utils.signRegistry(this.state.type,true)
+          }
+        ],
+        "secure-text"
+      );
     }
-    else{
-      
-       console.log(await utils.loadRegistry());
-    }  
   }
   render(){
       return(

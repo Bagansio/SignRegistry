@@ -1,13 +1,29 @@
 import AsyncStorage from '@react-native-async-storage/async-storage';
 
-const getKey = () => {
-    let date = new Date();
+function getKey(date) {
     let month = date.getMonth() + 1;
     return  '@'+ month + '-' + date.getFullYear();
 }
 
+function getDayKey(date){
+    return date.getDate();
+}
 
-const getData = async(key) => {
+
+function getHour(date) {
+
+    let hour = date.getHours();
+    let min = date.getMinutes();
+
+    if(min < 15) min = 0;
+    else if(min < 30) min = 15;
+    else if(min < 45) min = 30;
+    else min = 45;
+
+    return hour + ':' + min;
+}
+
+async function getData(key){
     try {
         const value = await AsyncStorage.getItem(key);
         return value != null ? JSON.parse(value) : null;
@@ -16,7 +32,7 @@ const getData = async(key) => {
     }
 }
 
-const storeData = async (key,value) => {
+async function storeData(key,value){
     try {
       const jsonValue = JSON.stringify(value)
       await AsyncStorage.setItem(key, jsonValue)
@@ -25,15 +41,66 @@ const storeData = async (key,value) => {
     }
   }
 
-export  async function loadRegistry () {
-    return await getData(getKey());
 
+
+/*
+  Creates a month, 
+  REQUERIES a start day,
+            an hour
+
+  
+  u CAN'T create a month for 'out' option 
+  because always will be first in option.
+*/
+const createMonth = (day_key,hour) => {
+    let month = {
+        'days': {
+            day_key : {
+                'in': hour,
+                'out': undefined
+            }
+        }
+    }
+    return month;
+}
+
+
+const createDay = (option,hour) => {
+    let day = {
+        'in': undefined,
+        'out': undefined
+    }
+    day[option] = hour;
+
+    return day;
+}
+
+export async function signRegistry (option, force) {
+    const date = new Date();
+    const key = getKey(date);
+    const day_key = getDayKey(date);
+    let current_month = await getData(key);
+    if (current_month == null || current_month == undefined || current_month.days == undefined){ //no exists month
+        current_month = createMonth(day_key,getHour(date));
+        
+    }
+    else if(current_month.days[day_key] != undefined){ //exists
+        if(current_month.days[day_key][option] != undefined && !force)
+            return false;//ask to change
+        else 
+            current_month.days[day_key][option] =  getHour(date);
+    }
+    else{
+        
+        current_month.days[day_key] = createDay(option,getHour(date));
+
+    }
+    await storeData(key,current_month);
+    return true;
     
 }
 
-export async function setRegistry () {
-    let registry = {
-        "Test": "TOST"
-    };
-    await storeData(getKey(),registry);
+export async function loadRegistry () {
+    keys = await AsyncStorage.getAllKeys();
+    
 }
