@@ -40,12 +40,9 @@ class SignButton extends React.Component {
 
 
   onPress = async() => {
-    let date = new Date();
-    Alert.alert(
-      "Alert Title",
-      "YOOO",);
-    if(! utils.signRegistry(this.state.type,false)){
-      Alert.prompt(
+    let signed = await utils.signRegistry(this.state.type,false);
+    if(! signed){
+      Alert.alert(
         "You already signed it",
         "Do you want to overwrite it?",
         [
@@ -56,13 +53,14 @@ class SignButton extends React.Component {
           },
           {
             text: "OK",
-            onPress: utils.signRegistry(this.state.type,true)
+            onPress: await utils.signRegistry(this.state.type,true)
           }
         ],
         "secure-text"
       );
     }
   }
+  
   render(){
       return(
         <Pressable

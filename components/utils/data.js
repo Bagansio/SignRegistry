@@ -1,8 +1,10 @@
 import AsyncStorage from '@react-native-async-storage/async-storage';
 
+const MONTH = '@month:';
+
 function getKey(date) {
     let month = date.getMonth() + 1;
-    return  '@'+ month + '-' + date.getFullYear();
+    return  MONTH+ month + '-' + date.getFullYear();
 }
 
 function getDayKey(date){
@@ -10,15 +12,29 @@ function getDayKey(date){
 }
 
 
+export async function getAllMonths(){
+    let data_list = await AsyncStorage.getAllKeys();
+
+    let months = [];
+
+    data_list.forEach( (value) => {
+        if(value.includes(MONTH)){
+            let month = value.replace(MONTH,'');
+            months.push(month);
+        }
+    })
+    return months;
+}
+
 function getHour(date) {
 
     let hour = date.getHours();
     let min = date.getMinutes();
 
-    if(min < 15) min = 0;
-    else if(min < 30) min = 15;
-    else if(min < 45) min = 30;
-    else min = 45;
+    if(min < 15) min = '00';
+    else if(min < 30) min = '15';
+    else if(min < 45) min = '30';
+    else min = '45';
 
     return hour + ':' + min;
 }
@@ -52,7 +68,7 @@ async function storeData(key,value){
   u CAN'T create a month for 'out' option 
   because always will be first in option.
 */
-const createMonth = (day_key,hour) => {
+function createMonth(day_key,hour) {
     let month = {
         'days': {
             day_key : {
@@ -65,7 +81,7 @@ const createMonth = (day_key,hour) => {
 }
 
 
-const createDay = (option,hour) => {
+function createDay(option,hour){
     let day = {
         'in': undefined,
         'out': undefined
@@ -82,7 +98,6 @@ export async function signRegistry (option, force) {
     let current_month = await getData(key);
     if (current_month == null || current_month == undefined || current_month.days == undefined){ //no exists month
         current_month = createMonth(day_key,getHour(date));
-        
     }
     else if(current_month.days[day_key] != undefined){ //exists
         if(current_month.days[day_key][option] != undefined && !force)
